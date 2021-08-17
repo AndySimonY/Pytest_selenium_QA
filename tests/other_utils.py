@@ -1,13 +1,10 @@
 import random
-def generate_random_number():
-    number = []
-    while len(number) < 3:
-        x = random.randint(0, 19)
-        if x not in number and x != 18:
-            number.append(x)
-    print(number)
-    return number
-
-
-
-
+def generate_random_number(count, length, elem):
+    if count < length:
+        number = []
+        while len(number) < count:
+            x = random.randint(0, length - 1)
+            if x not in number and x != elem - 1:
+                number.append(x)
+        print(number)
+        return number
