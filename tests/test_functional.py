@@ -1,81 +1,109 @@
-import os
+
 import allure
 import pytest
-from framework.browser.browser import Browser
 from tests.config.urls import Urls
-from tests.pages.login_page import LoginPage
-from tests.pages.welcome_page import WelcomePage
-from tests.pages.filling_inf_page import FillingInfPage
+from tests.config.test_data import TestData
+from tests.config.api_headers import RequestHeaders
+from tests.routes.API import API
+from tests.other_utils import MyUtils
+from tests.config.json_fixture import JSONFixture
+
 
 
 class TestFunctional(object):
-    
-    @pytest.mark.parametrize('password, email, domain, index_for_unsellect_all, \
-                              no_select_interes_name, file_path',
-                              [('Silverwan1ы', 'aka', 'Setras', 20, 
-                              'Select all', Urls.PATH_FOR_IMAGE_AVA)])
-    def test_case_1(self, password, 
-                    email, domain, index_for_unsellect_all,
-                    no_select_interes_name, file_path, create_browser):
-        with allure.step("First step"):
-            Browser.get_browser().set_url(Urls.TEST_STAND_URL)
-            page = WelcomePage()
-            assert page, 'Страница открылась или не корректно, или это не она!'
-        with allure.step("Second step"):
-            page = LoginPage()
-            assert page.is_autorization_form_displayed(), (
-                   "Не отображается форма регистрации\
-                    или мы на другой странице")
-        with allure.step("Tird step"):
-            page.clear_field_password__and_send_keys(password)
-            page.clear_field_email__and_send_keys(email)
-            page.clear_field_domain__and_send_keys(domain)
-            page.selec_dropdown_item()
-            page.uncheck_politic()
-            assert page.inf_fields_is_displayed(), (
-                "Не отображается форма заполнения информации\
-                 или мы на другой странице")
-        with allure.step("Fourth step"):
-            page = FillingInfPage()
-            items = page.get_checkbox_items()
-            page.click_unselect_all(index_for_unsellect_all, items)
-            for el in range(len(items)):
-                elem = -1
-                if items[el].text == no_select_interes_name:
-                    elem = el
-                    break
-            page.select_random_interes(4, items, elem)
-            page.upload_image(file_path)
-            page.click_next_button()
-            assert page.is_displaeyd_following_person_inf(), (
-                "Не отображается форма персональной информации\
-                 или мы на другой странице")
-    
-    def test_case_2(self, create_browser):
-        with allure.step("First step"):
-            Browser.get_browser().set_url(Urls.TEST_STAND_URL)
-            page = LoginPage()
-            assert page, 'Страница открылась или не корректно, или это не она!'
-            with allure.step("Second step"):
-                page.is_autorization_form_displayed()
-                page.click_close_help_window_buttom()
-                assert page.get_class_style_of_help_window(), 'Страница открылась или не корректно или это не она!'
+      
+    @pytest.mark.parametrize('url_path, headers', 
+                            [(Urls.POSTS_PATH, 
+                              RequestHeaders.BASE_HEADERS)])
+    def test_posts_response(self, url_path, headers,wait_for_next_request):
+        with allure.step("GET posts"):
+          api_inst = API(headers)
+          posts_res = api_inst.get(MyUtils.join_path(url_path))
+          assert posts_res.status_code == 200, 'Запрос провалился'
+        with allure.step("Check response is json"):
+          json_obj = api_inst.check_is_json(posts_res)
+          assert json_obj, "Кажется это не JSON формат"
+        with allure.step("The list is sorted in ascending order"):
+          assert api_inst.check_list_sorted_ascending_order(json_obj), 'ID сортируются не по возрастанию'
 
-    def test_case_3(self, create_browser):
-         with allure.step("Tird step"):
-             Browser.get_browser().set_url(Urls.TEST_STAND_URL)
-             page = LoginPage()
-             assert page, 'Страница открылась или не корректно или это не она!'
-             with allure.step("Second step"):
-                page.is_autorization_form_displayed()
-                page.click_button_accept_cookie()
-                assert page.is_invisibility_cookie_form(), 'Форма с куками не пропала'
+    @pytest.mark.parametrize('url_path, headers, validation_data',  
+                            [(Urls.POST_99, 
+                              RequestHeaders.BASE_HEADERS, [10, 99])])
+    def test_post_number_99(self, url_path, headers,
+                      validation_data, wait_for_next_request):
+        with allure.step("GET post number 99"):
+          api_inst = API(headers)
+          posts_res = api_inst.get(MyUtils.join_path(url_path))
+          assert posts_res.status_code == 200, 'Запрос провалился'
+        with allure.step("Check response is json"):
+          json_obj = api_inst.check_is_json(posts_res)
+          assert json_obj, "Кажется это не JSON формат"
+        with allure.step("Check post 99 is displayed correctly"):
+          assert api_inst.post_99_is_displayed_correctly(json_obj, validation_data), (
+                                                        'Значения не совпадают с ожидаемыми')
 
-    @pytest.mark.parametrize('time_start_with', [('00:00:00')])
-    def test_case_4(self,time_start_with, create_browser):
-        with allure.step("Tird step"):
-             Browser.get_browser().set_url(Urls.TEST_STAND_URL)
-             page = LoginPage()
-             assert page, 'Страница открылась или не корректно или это не она!'
-             page.is_autorization_form_displayed()
-             assert page.is_timer_started_of_the_time(time_start_with), 'Таймер начался не с нуля'
+    @pytest.mark.parametrize('url_path, headers',  
+                            [(Urls.POST_150, 
+                              RequestHeaders.BASE_HEADERS)])
+    def test_404(self, url_path, headers, wait_for_next_request):
+        with allure.step("GET post number 150"):
+          api_inst = API(headers)
+          posts_res = api_inst.get(MyUtils.join_path(url_path))
+          assert posts_res.status_code == 404, 'Запрос каким то образом не провалился'
+
+    @pytest.mark.parametrize('url_path, headers, my_post_id',
+                            [(Urls.POSTS_PATH, 
+                              RequestHeaders.BASE_HEADERS, '/101')])
+    def test_create_post(self, url_path, headers, my_post_id):
+        with allure.step("POST request - create post"):
+          api_inst = API(headers)
+          text = api_inst.get_random_text(13)
+          posts_res = api_inst.post(MyUtils.join_path(url_path), 
+                                    JSONFixture.for_create_post(text))
+          assert posts_res.status_code == 201, 'Пост должен быть создан'
+        with allure.step("Get my new creating post"):
+          posts_res = api_inst.get(MyUtils.join_path(url_path) + my_post_id)
+          assert posts_res.status_code == 200, 'Пост не получен'
+        with allure.step("Check response is json"):
+           json_obj = api_inst.check_is_json(posts_res)
+           assert json_obj, "Кажется это не JSON формат"
+        with allure.step("Check my new post is displayed correctly"):
+          if posts_res.status_code == 200:
+              assert api_inst.check_new_my_post_is_displayed_correctly(json_obj, 
+                                                                      [text, text, 1], 
+                                                                      'id')
+
+    @pytest.mark.parametrize('url_path, headers, user_num, verif_value',
+                            [(Urls.USERS_PATH, 
+                              RequestHeaders.BASE_HEADERS, 5, 
+                              TestData.VALUES_FOR_5_USER)])
+    def test_get_users(self, url_path, headers, 
+                       user_num, verif_value, wait_for_next_request):
+      with allure.step("Get users"):
+        api_inst = API(headers)
+        posts_res = api_inst.get(MyUtils.join_path(url_path))
+        assert posts_res.status_code == 200, 'Пользователи не получены'
+      with allure.step("Check response is json"):
+          json_obj = api_inst.check_is_json(posts_res)
+          assert json_obj, "Кажется это не JSON формат"
+      with allure.step("Check 5 user is displayed correctly"):
+          assert api_inst.check_5_user_is_displayed_correctly(json_obj[user_num - 1], verif_value), (
+                'Данныйе 5-ого пользователя не совпадают')
+
+    @pytest.mark.parametrize('url_path, headers, verif_value',
+                            [(Urls.USER_5, 
+                              RequestHeaders.BASE_HEADERS,
+                              TestData.VALUES_FOR_5_USER)])
+    def test_get_users_5(self, url_path, headers, verif_value,
+                       wait_for_next_request):
+      with allure.step("Get users five"):
+        api_inst = API(headers)
+        posts_res = api_inst.get(MyUtils.join_path(url_path))
+        assert posts_res.status_code == 200, 'Пользователи не получены'
+      with allure.step("Check response is json"):
+          json_obj = api_inst.check_is_json(posts_res)
+          assert json_obj, "Кажется это не JSON формат"
+      with allure.step("Check 5 user is displayed correctly"):
+          assert api_inst.check_again_5_user_is_displayed_correctly(json_obj, verif_value), (
+            'Данный пользователя 5 не соответсвуют предидущим полученным данным'
+          )
