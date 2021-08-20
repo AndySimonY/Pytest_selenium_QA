@@ -1,6 +1,6 @@
-from logging import fatal
 from framework.api.base_api import BaseApi
 from framework.utils.logger import Logger
+from framework.api.json_converter import JsonConverter
 from tests.other_utils import MyUtils
 
 class API(BaseApi):
@@ -8,47 +8,53 @@ class API(BaseApi):
     def __init__(self, headers):
         super().__init__(headers)
 
-    def check_is_json(self, json_obj):
-        return self.get_json(json_obj)
 
+    def get_response_obj(self, url, query = '', status = 200, Class=None):
+        response = self.get(MyUtils.join_path(url) + query)
+        assert response.status_code == 200, 'Запрос провалился'
+        json_obj = self.get_json(response)
+        assert json_obj, "Кажется это не JSON формат"
+        return JsonConverter.json_converter(json_obj, Class=Class)
+    
     @staticmethod
-    def check_list_sorted_ascending_order(json_obj):
-        Logger.info("Проверяем что список сортируется корректно (по id)")
-        id_list = MyUtils.create_new_list_from_list(json_obj, 'id')
+    def check_list_sorted_ascending_order_id(obj):
+        Logger.info("Проверяем что список сортируется по возрастанию id)")
+        id_list = MyUtils.get_id_list(obj)
         if id_list == sorted(id_list):
             return True
         else:
             return False
 
     @staticmethod
-    def post_99_is_displayed_correctly(json_obj, 
-                                       verification_data):
-        """ В параметры передовать список только численных значений для проверки значений ключей в обьекте
-            в том порядка в котором они указаны в объекте, если в объекте между ключами с
-            численными значениям есть еще и строки  - это не повлияет. Но если предать доп параметрами 
-            flag и ignore_keys, то сравнит все ключи обьекта со значениями переданными в списке в порядке ключей,
-            будут игнорироваться и проверяться только на присутсвие ключи которые указаты в списке ignore_keys
-            """
-        return MyUtils.checking_key_and_val_object(json_obj, verification_data)
+    def check_five_user_valid_data(received_data, expected_data):
+        if expected_data == received_data:
+            return True
+        else:
+            return False
 
     @staticmethod
-    def get_random_text(lenght=5):
-        return MyUtils.generate_random_text(lenght)
-
+    def check_post_field(obj, id=None, userId=None, body='', title=''):
+        result = False
+        if body and not title:
+            if obj.id and obj.title and obj.body == body and obj.userId == userId:
+                result = True
+        elif title and not body:
+            if obj.id and obj.userId == userId and obj.title == title and obj.body:
+                result = True
+        elif title and body: 
+             if obj.id and obj.userId == userId and obj.title == title and obj.body == body:
+                result = True
+        else:
+            if obj.id == id and obj.userId == userId and obj.title and obj.body:
+                result = True
+        return result
+    
     @staticmethod
-    def check_new_my_post_is_displayed_correctly(json_obj, verification_data, ignore_key):
-        return MyUtils.checking_key_and_val_object(
-                                  json_obj,
-                                  verification_data, 
-                                  flag=True, 
-                                  ignore_key=ignore_key)
-   
-    @staticmethod
-    def check_5_user_is_displayed_correctly(json_obj, verification_data):
-        return MyUtils.checking_key_and_val_object(
-                                  json_obj,
-                                  verification_data, 
-                                  flag=True)
-
-    def check_again_5_user_is_displayed_correctly(self, json_obj, verification_data):
-        return MyUtils.dict_iterator_get_val(json_obj) == verification_data
+    def get_json(json_obj):
+        Logger.info("Получаем и проверяем что это JSON")
+        try:
+            j = json_obj.json()
+        except ValueError as e:
+            Logger.info("Неудалось получить JSON из запроса")
+            return False
+        return j

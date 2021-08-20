@@ -1,109 +1,61 @@
-
 import allure
 import pytest
+from framework.api.json_converter import JsonConverter
 from tests.config.urls import Urls
-from tests.config.test_data import TestData
 from tests.config.api_headers import RequestHeaders
 from tests.routes.API import API
 from tests.other_utils import MyUtils
-from tests.config.json_fixture import JSONFixture
-
-
+from tests.config.json_fixture.create_post_json import CreatePostJSON
+from tests.config.json_fixture.user_5_json import User5JSON
 
 class TestFunctional(object):
       
-    @pytest.mark.parametrize('url_path, headers', 
-                            [(Urls.POSTS_PATH, 
-                              RequestHeaders.BASE_HEADERS)])
-    def test_posts_response(self, url_path, headers,wait_for_next_request):
-        with allure.step("GET posts"):
+    @pytest.mark.parametrize('headers, post_id_99, post_id_150, post_id_for_verif, \
+                              post_userID_for_verif, user_5_json, user_5_query',
+                            [(RequestHeaders.BASE_HEADERS, '/99', '/150',
+                             99, 10, User5JSON.user_5_json(), '/5')])
+    def test_rest_api(self, headers, post_id_99, post_id_150, 
+                      post_id_for_verif, post_userID_for_verif,
+                      user_5_json, user_5_query):
+        with allure.step("Step №1 - Получаем посты и проверям, \
+                          что они отсортировани по возрастанию id"):
           api_inst = API(headers)
-          posts_res = api_inst.get(MyUtils.join_path(url_path))
-          assert posts_res.status_code == 200, 'Запрос провалился'
-        with allure.step("Check response is json"):
-          json_obj = api_inst.check_is_json(posts_res)
-          assert json_obj, "Кажется это не JSON формат"
-        with allure.step("The list is sorted in ascending order"):
-          assert api_inst.check_list_sorted_ascending_order(json_obj), 'ID сортируются не по возрастанию'
-
-    @pytest.mark.parametrize('url_path, headers, validation_data',  
-                            [(Urls.POST_99, 
-                              RequestHeaders.BASE_HEADERS, [10, 99])])
-    def test_post_number_99(self, url_path, headers,
-                      validation_data, wait_for_next_request):
-        with allure.step("GET post number 99"):
-          api_inst = API(headers)
-          posts_res = api_inst.get(MyUtils.join_path(url_path))
-          assert posts_res.status_code == 200, 'Запрос провалился'
-        with allure.step("Check response is json"):
-          json_obj = api_inst.check_is_json(posts_res)
-          assert json_obj, "Кажется это не JSON формат"
-        with allure.step("Check post 99 is displayed correctly"):
-          assert api_inst.post_99_is_displayed_correctly(json_obj, validation_data), (
-                                                        'Значения не совпадают с ожидаемыми')
-
-    @pytest.mark.parametrize('url_path, headers',  
-                            [(Urls.POST_150, 
-                              RequestHeaders.BASE_HEADERS)])
-    def test_404(self, url_path, headers, wait_for_next_request):
-        with allure.step("GET post number 150"):
-          api_inst = API(headers)
-          posts_res = api_inst.get(MyUtils.join_path(url_path))
-          assert posts_res.status_code == 404, 'Запрос каким то образом не провалился'
-
-    @pytest.mark.parametrize('url_path, headers, my_post_id',
-                            [(Urls.POSTS_PATH, 
-                              RequestHeaders.BASE_HEADERS, '/101')])
-    def test_create_post(self, url_path, headers, my_post_id):
-        with allure.step("POST request - create post"):
-          api_inst = API(headers)
-          text = api_inst.get_random_text(13)
-          posts_res = api_inst.post(MyUtils.join_path(url_path), 
-                                    JSONFixture.for_create_post(text))
-          assert posts_res.status_code == 201, 'Пост должен быть создан'
-        with allure.step("Get my new creating post"):
-          posts_res = api_inst.get(MyUtils.join_path(url_path) + my_post_id)
-          assert posts_res.status_code == 200, 'Пост не получен'
-        with allure.step("Check response is json"):
-           json_obj = api_inst.check_is_json(posts_res)
-           assert json_obj, "Кажется это не JSON формат"
-        with allure.step("Check my new post is displayed correctly"):
-          if posts_res.status_code == 200:
-              assert api_inst.check_new_my_post_is_displayed_correctly(json_obj, 
-                                                                      [text, text, 1], 
-                                                                      'id')
-
-    @pytest.mark.parametrize('url_path, headers, user_num, verif_value',
-                            [(Urls.USERS_PATH, 
-                              RequestHeaders.BASE_HEADERS, 5, 
-                              TestData.VALUES_FOR_5_USER)])
-    def test_get_users(self, url_path, headers, 
-                       user_num, verif_value, wait_for_next_request):
-      with allure.step("Get users"):
-        api_inst = API(headers)
-        posts_res = api_inst.get(MyUtils.join_path(url_path))
-        assert posts_res.status_code == 200, 'Пользователи не получены'
-      with allure.step("Check response is json"):
-          json_obj = api_inst.check_is_json(posts_res)
-          assert json_obj, "Кажется это не JSON формат"
-      with allure.step("Check 5 user is displayed correctly"):
-          assert api_inst.check_5_user_is_displayed_correctly(json_obj[user_num - 1], verif_value), (
-                'Данныйе 5-ого пользователя не совпадают')
-
-    @pytest.mark.parametrize('url_path, headers, verif_value',
-                            [(Urls.USER_5, 
-                              RequestHeaders.BASE_HEADERS,
-                              TestData.VALUES_FOR_5_USER)])
-    def test_get_users_5(self, url_path, headers, verif_value,
-                       wait_for_next_request):
-      with allure.step("Get users five"):
-        api_inst = API(headers)
-        posts_res = api_inst.get(MyUtils.join_path(url_path))
-        assert posts_res.status_code == 200, 'Пользователи не получены'
-      with allure.step("Check response is json"):
-          json_obj = api_inst.check_is_json(posts_res)
-          assert json_obj, "Кажется это не JSON формат"
-      with allure.step("Check 5 user is displayed correctly"):
-          assert api_inst.check_again_5_user_is_displayed_correctly(json_obj, verif_value), (
-            'Данный пользователя 5 не соответсвуют предидущим полученным данным'
+          posts = api_inst.get_response_obj(Urls.POSTS_PATH)
+          assert api_inst.check_list_sorted_ascending_order_id(posts), (
+          'Посты сортируются не по возрастанию id'
           )
+        with allure.step("Step №2 - Получаем пост номер 99, \
+                           и проверяем что данные корректны"):
+          post_99 = api_inst.get_response_obj(Urls.POSTS_PATH + post_id_99)
+          assert api_inst.check_post_field(post_99, userId=post_userID_for_verif, 
+                                           id=post_id_for_verif), (
+                                           'Пост не соответсвует требования проверки')
+        with allure.step("Step №3 - Получаем пост номер 150, \
+                           и проверяем, что статус код равен 404"):
+          assert api_inst.get(MyUtils.join_path(Urls.POSTS_PATH + post_id_150)).status_code == 404, (
+                                          'Возникла ошибка в функции get_response_obj')
+        with allure.step("Step №4 - Создаём пост, \
+                          и проверяем, что он создался правильно с переданными данными"):
+          text = MyUtils.generate_random_text(13)
+          create_post_res = api_inst.post(MyUtils.join_path(Urls.POSTS_PATH), 
+                                          CreatePostJSON.for_create_post(text))
+          assert create_post_res.status_code == 201, 'Пост не был создан, произошла ошибка'
+          post_101 = api_inst.get_response_obj(Urls.POSTS_PATH, query='/101')
+          assert api_inst.check_post_field(post_101 ,body=text, title = text), 'Данные нового поста неккоректы'
+        with allure.step("Step №5 - Получаем пользователей, \
+                          и проверяем, что данные 5-ого пользователя\
+                          отображаются правильно"):
+          users = api_inst.get_response_obj(Urls.USERS_PATH)
+          validat_data = JsonConverter.json_converter(user_5_json)
+          assert api_inst.check_five_user_valid_data(users[4], 
+                                                     validat_data),(
+                                                     'Данные 5 пользователя не совпадают с ожидаемыми'
+                                                     )
+        with allure.step("Step №6 - Получаем пятого пользователя, \
+                          и проверяем, что данные 5-ого пользователя\
+                          отображаются правильно"):
+          user_5 = api_inst.get_response_obj(Urls.USERS_PATH + user_5_query)
+          assert api_inst.check_five_user_valid_data(user_5, 
+                                                     validat_data),(
+                                                     'Данные 5 пользователя не совпадают с ожидаемыми'
+                                                     )

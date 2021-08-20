@@ -1,5 +1,4 @@
 import requests
-import json
 from framework.utils.logger import Logger
 
 class BaseApi:
@@ -28,13 +27,3 @@ class BaseApi:
         Logger.info("Отправка запроса delete по пути " + url)
         result = self._r.delete(url, headers=self.headers)
         return result
-
-    @staticmethod
-    def get_json(json_obj):
-        Logger.info("Получаем JSON из запроса")
-        try:
-            j = json_obj.json()
-        except ValueError as e:
-            Logger.info("Неудалось получить JSON из запроса")
-            return False
-        return j

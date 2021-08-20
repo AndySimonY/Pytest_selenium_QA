@@ -1,2 +1,0 @@
-class TestData:
-    VALUES_FOR_5_USER =[5, 'Chelsey Dietrich', 'Kamren', 'Lucio_Hettinger@annie.ca', 'Skiles Walks', 'Suite 351', 'Roscoeview', '33263', '-31.8129', '62.5342', '(254)954-1289', 'demarco.info', 'Keebler LLC', 'User-centric fault-tolerant solution', 'revolutionize end-to-end systems']

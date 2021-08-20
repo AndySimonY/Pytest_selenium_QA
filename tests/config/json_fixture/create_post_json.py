@@ -1,4 +1,4 @@
-class JSONFixture:
+class CreatePostJSON:
 
     @staticmethod
     def for_create_post(text):
