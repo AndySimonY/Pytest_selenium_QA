@@ -13,12 +13,19 @@ class BaseApi:
         result = requests.get(url, headers = self.headers)
         return result
 
-    def post(self, url, body):
+    def post(self, url, body='', files=None, **kwargs):
         try:
             Logger.info("Отправка запроса post по пути " + url)
-            result = self._r.post(url,
-                              json=body,
-                              headers=self.headers)
+            if files:
+                result = self._r.post(url,
+                                json=body,
+                                headers=self.headers, 
+                                **kwargs)
+            else:
+                result = self._r.post(url,
+                                files=body,
+                                headers=self.headers
+                                **kwargs)
             return result
         except:
             Logger.info("Произошла ошибка во время отпрваки post запроса")

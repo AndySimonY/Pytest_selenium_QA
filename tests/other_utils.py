@@ -1,6 +1,7 @@
+import os
 import random
 import string
-from tests.config.urls import Urls
+from tests.config.test_data.urls import Urls
 
 class MyUtils:
     
@@ -23,6 +24,12 @@ class MyUtils:
             return rand_str
 
     @staticmethod
-    def join_path(path, host = Urls.BASE_URL):
+    def join_path(path, host = Urls.BASE_URL_API):
             host_path = host + path
             return host_path
+
+    @staticmethod
+    def file(filepath=''):
+        """Указать путь к файлу относительно рабочей директории"""
+        files = {"file": open(os.getcwd() + filepath, "rb")}
+        return files
