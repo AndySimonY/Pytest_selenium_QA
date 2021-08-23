@@ -1,7 +1,8 @@
 class BrowserConfig(object):
     # Настройки браузера
     # Поддерживаемые браузеры: "chrome", "firefox"
-    BROWSER = "chrome"
+    BROWSER = "firefox"
+    LANGUAGE = 'ru'
     CHROME_VERSION = "75.0"
     FIREFOX_VERSION = "66.0"
 

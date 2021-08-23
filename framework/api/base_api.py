@@ -13,22 +13,17 @@ class BaseApi:
         result = requests.get(url, headers = self.headers)
         return result
 
-    def post(self, url, body='', files=None, **kwargs):
-        try:
+    def post(self, url, body='', file={}, **kwargs):
             Logger.info("Отправка запроса post по пути " + url)
-            if files:
+            if file:
                 result = self._r.post(url,
-                                json=body,
-                                headers=self.headers, 
-                                **kwargs)
+                                files=file)
             else:
                 result = self._r.post(url,
-                                files=body,
-                                headers=self.headers
+                                json=body,
+                                headers=self.headers,
                                 **kwargs)
             return result
-        except:
-            Logger.info("Произошла ошибка во время отпрваки post запроса")
        
     def delete(self, url):
         Logger.info("Отправка запроса delete по пути " + url)

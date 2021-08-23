@@ -6,4 +6,4 @@ class Urls(object):
     BASE_URL_API = 'https://api.vk.com/method/'
 
     "Локальные пути"
-    IMAGE_PATH = '\\tests\config\\test_data\img\image'
+    LEOPARD_IMAGE_PATH = r'\tests\config\test_data\img\image.jpg'

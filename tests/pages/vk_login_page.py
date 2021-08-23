@@ -3,7 +3,6 @@ from selenium.webdriver.common.by import By
 """Элементы"""
 from framework.pages.base_page import BasePage
 from framework.elements.text_box import TextBox
-from framework.elements.label import Label
 from framework.elements.button import Button
 
 
@@ -38,7 +37,3 @@ class VKLoginPage(BasePage):
         self.password_index.send_keys(password)
 
         self.login_btn.click()
-
-
-
-

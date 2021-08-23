@@ -2,11 +2,7 @@ from selenium.webdriver.common.by import By
 
 """Элементы"""
 from framework.pages.base_page import BasePage
-from framework.elements.text_box import TextBox
 from framework.elements.label import Label
-from framework.elements.button import Button
-
-
 
 class HomePage(BasePage):
 
@@ -23,5 +19,3 @@ class HomePage(BasePage):
     
     def go_to_my_page(self):
         self.my_page.click()
-
-
