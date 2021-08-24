@@ -14,30 +14,43 @@ class JsonConverter:
      """
     @staticmethod
     def json_converter(data, Class=None, dir_path=None, classname=None):
-        data = data.json()
+        try:
+            data = data.json()
+        except:
+            pass
         if Class:
             if isinstance(data, list):
                 obj_instanse = []
                 for obj in data:
-                    str_obj = str(obj).replace("\'", "\"")
+                    str_obj = str(obj).replace("\'", "\"")\
+                              .replace('True', '"True"')\
+                              .replace('False', '"False"')
                     obj_instanse.append(Class(JsonConverter.parse_json_into_obj(str_obj)))
                 return obj_instanse
             else:
-                str_obj = str(data).replace("\'", "\"")
+                str_obj = str(data).replace("\'", "\"")\
+                              .replace('True', '"True"')\
+                              .replace('False', '"False"')
                 return Class(JsonConverter.parse_json_into_obj(str_obj))
         elif classname and dir_path:
-            str_obj = str(data).replace("\'", "\"")
+            str_obj = str(data).replace("\'", "\"")\
+                               .replace('True', '"True"')\
+                               .replace('False', '"False"')
             return JsonConverter.create_class_file_from_json(data, classname=classname, 
                                                             dir_path=dir_path)
         else:
             if isinstance(data, list):
                 obj_instanse = []
                 for obj in data:
-                    str_obj = str(obj).replace("\'", "\"")
+                    str_obj = str(obj).replace("\'", "\"")\
+                                      .replace('True', '"True"')\
+                                      .replace('False', '"False"')
                     obj_instanse.append(JsonConverter.parse_json_into_obj(str_obj))
                 return obj_instanse
             else:
-                str_obj = str(data).replace("\'", "\"")
+                str_obj = str(data).replace("\'", "\"")\
+                                   .replace('True', '"True"')\
+                                   .replace('False', '"False"')
                 return JsonConverter.parse_json_into_obj(str_obj)
                       
     @staticmethod

@@ -9,15 +9,15 @@ from framework.elements.button import Button
 
 class VKLoginPage(BasePage):
 
-     header = ".//header[@id = 'page_header']"
+     header = "//header[@id = 'page_header']"
      email_index = TextBox(search_condition=By.XPATH,
-                        locator=".//input[@id='index_email']", 
+                        locator="//input[@id='index_email']", 
                         name='Email')
      password_index = TextBox(search_condition=By.XPATH,
-                        locator=".//input[@id='index_pass']", 
+                        locator="//input[@id='index_pass']", 
                         name='Password')
      login_btn = Button(search_condition=By.XPATH,
-                        locator=".//button[@id='index_login_button']", 
+                        locator="//button[@id='index_login_button']", 
                         name='Sign in')
 
      def __init__(self):

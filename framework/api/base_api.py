@@ -14,7 +14,7 @@ class BaseApi:
         return result
 
     def post(self, url, body='', file={}, **kwargs):
-            Logger.info("Отправка запроса post по пути " + url)
+            Logger.info("Отправка запроса post по пути " + url + " с телом " + body)
             if file:
                 result = self._r.post(url,
                                 files=file)
