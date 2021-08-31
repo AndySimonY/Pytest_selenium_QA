@@ -1,118 +1,93 @@
-"""Специализированные модули для тестирования и отчётов"""
 import allure
 import pytest
+from datetime import datetime as dtime
 
-"""Модули из фреймворка"""
 from framework.browser.browser import Browser
+from framework.utils.logger import Logger
 
-"""Тестовые данные"""
+from tests.pages.login_page import LoginPage
+from tests.DB_models.Table_test import Table_test
+
 from tests.config.test_data.urls import Urls
-from tests.config.test_data.t_data import Tdata
-from tests.config.test_data.api_headers import RequestHeaders
-from tests.config.test_data.vk_locators.menu_loc import LeftMainMenu
+from tests.config.browser import BrowserConfig
+from tests.config.test_data.t_data import TableTestData
 
-"""Утилиты"""
-from tests.routes.VKApi import VKApi
+
 from tests.MyUtils.other_utils import MyUtils
 
-"""Страницы"""
-from tests.pages.vk_login_page import VKLoginPage
-from tests.pages.my_page import MyPage
-from tests.pages.feed_page import FeedPage
-
-"""Сторонние сущности"""
-from tests.pages.wall.wall_posts_entity import PostsForm
-from tests.pages.wall.wall_comments_entity import CommentForm
-
-
 class TestFunctional(object):
+    
+    @pytest.mark.parametrize('target_table', [('test')])
+    def test_case_1(self,target_table, create_browser):
+       start_time = dtime.now()
+       table = Table_test(tb_name=target_table)
 
-      @pytest.mark.parametrize('headers, base_url, login_password, token,\
-                                image_path, my_page_loc',
-                            [(RequestHeaders.BASE_HEADERS, Urls.VK_UI_URL,
-                            (Tdata.EMAIL, Tdata.PASSWORD), Tdata.ACCESS_TOKEN,
-                             Urls.LEOPARD_IMAGE_PATH, LeftMainMenu.my_page)])
-      def test_vk_api(self, headers, base_url, login_password, 
-                      token, image_path,my_page_loc, create_browser):
-                      
-          with allure.step("Step №1 - Перейти на сайт https://vk.com/"):
-                 Browser.get_browser().set_url(base_url)
+       Logger.info(f"Перейти на сайт по ссылке {Urls.BASE_URL}")
+       Browser.get_browser().set_url(Urls.BASE_URL)
+       page = LoginPage()
+       assert page, 'Страница открылась или не корректно, или это не она!'
 
-          with allure.step("Step №2 - Авторизоваться"):
-                 login_page = VKLoginPage()
-                 login_page.login(login_password)
-                 
-          with allure.step("Step №3 -  Перейти на 'Мою страницу'"):
-                 FeedPage(locator=my_page_loc).main_menu_left.navigate()
+       Logger.info("Скрыть окно форму 'Help'")
+       page.is_autorization_form_displayed()
+       page.click_close_help_window_buttom()
+       status = page.get_class_style_of_help_window()
+       start_time, end_time = MyUtils.convert_to_datatime(start_time)
+       table.insert_test_table_data(
+                    name=TableTestData.name_for_test_1, status_id=status,
+                    method_name=TableTestData.method_name_for_test_1,
+                    project_data=TableTestData.project_name, session_data=TableTestData.session_data,
+                    start_time=start_time, end_time=end_time, env=TableTestData.env,
+                    browser=BrowserConfig.BROWSER, author_data=TableTestData.author_data)
+       assert status, (
+                     'Страница открылась или не корректно или это не она!')
 
-          with allure.step("Step №4 - Получить изображение"):
-                 img = Img()
-                 img_el = img.get_image()
-                 assert not img_el, "sdsdsdsd"
+    @pytest.mark.parametrize('target_table', [('test')])
+    def test_case_2(self, target_table,create_browser):
+         start_time = dtime.now()
+         table = Table_test(tb_name=target_table)
 
-          with allure.step("Step №4.1 -  С помощью запроса к API получить id \
-                              текущего пользователя"):
-                  api_inst = VKApi(headers, token)
-                  user_id = api_inst.get_current_user()
-                 
-          with allure.step("Step №4.2 -  С помощью запроса к API создать запись со случайно\
-                              сгенерированным текстом на стене и\
-                              получить id записи из ответ"):
-                  message_step_4 = MyUtils.generate_random_text(10)
-                  post_id = api_inst.create_post_on_my_page(message=message_step_4)
+         Logger.info(f"Перейти на сайт по ссылке {Urls.BASE_URL}")
+         Browser.get_browser().set_url(Urls.BASE_URL)
+         page = LoginPage()
+         assert page, 'Страница открылась или не корректно или это не она!'
 
-          with allure.step("Step №5 - Не обновляя страницу убедиться, что на стене появилась\
-                              запись с нужным текстом от правильного пользователя"):
-                  my_page = MyPage()
-                  wall_post = my_page.post = PostsForm(user_id=user_id, post_id=post_id)
-                  assert wall_post.check_post_is_visiple_right(message_step_4, Tdata.AUTOR_NAME),(
-                  'Только что созданный пост отображается неверно'
-                   )
+         Logger.info("Принять использование cookie")
+         page.is_autorization_form_displayed()
+         page.click_button_accept_cookie()
+         status = page.is_invisibility_cookie_form()
+         start_time, end_time = MyUtils.convert_to_datatime(start_time)
+         table.insert_test_table_data(
+                    name=TableTestData.name_for_test_2, status_id=status,
+                    method_name=TableTestData.method_name_for_test_2,
+                    project_data=TableTestData.project_name, session_data=TableTestData.session_data,
+                    start_time=start_time, end_time=end_time, env=TableTestData.env,
+                    browser=BrowserConfig.BROWSER, author_data=TableTestData.author_data)
+         assert status, 'Форма с куками не пропала'
 
-          with allure.step("Step №6 -  Отредактировать запись через запрос к API - изменить\
-                              текст и добавить (загрузить) любую картинку"):
-                  message_step_6 = MyUtils.generate_random_text(10)
-                  photo_id = api_inst.edit_post_on_my_page(
-                             post_id=post_id, message=message_step_6,
-                             owner_id=user_id, filepath=image_path
-                                                )
-          with allure.step("Step №7 -   Не обновляя страницу убедиться, что изменился\
-                               текст сообщения и добавилась загруженная\
-                               картинка(убедиться, что картинки одинаковые)"):
-                  wall_post_with_photo = my_page.post = PostsForm(user_id=user_id, 
-                                                                  post_id=post_id, photo_id=photo_id)
-                  assert wall_post_with_photo.check_post_changes_and_added_img(
-                                 message_step_6),(
-                                   "Во время изменения поста(текст, добавлен фото), произошла ошибка")
+    @pytest.mark.parametrize('simulate_data', 
+    [(
+           {'status_id':'PASSED', 'project_id':TableTestData.project_name, 'end_time':MyUtils.convert_to_datatime()[1]})
+    ])
+    def test_case_3(self, simulate_data):
+           Logger('Симуляция выполнения 1 теста')
+           table = Table_test(tb_name='test')
+           assert table.simulate_and_update_test(simulate_data=simulate_data)
+    
+    @pytest.mark.parametrize('simulate_data', 
+    [(
+           {'status_id':'FAILED', 'project_id':TableTestData.project_name, 'browser': 'edge'})
+    ])
+    def test_case_4(self, simulate_data):
+           Logger('Симуляция выполнения 2 теста')
+           table = Table_test(tb_name='test')
+           assert table.simulate_and_update_test(simulate_data=simulate_data)
 
-          with allure.step("Step №8 - Используя запрос к API добавить комментарий к\
-                              записи со случайным текстом"):
-               message_step_8 = MyUtils.generate_random_text(10)
-               comment_id = api_inst.create_comment(owner_id=user_id, 
-                                       post_id=post_id,
-                                       message=message_step_8)
 
-          with allure.step("Step №9 - Не обновляя страницу убедиться, что на стене появилась\
-                              запись с нужным текстом от правильного пользователя"):
-
-               wall_comment = MyPage().comment = CommentForm(user_id=user_id, 
-                                                             post_id=post_id,
-                                                             comment_id=comment_id)
-               assert wall_comment.check_comment_visible_right(message_step_8, Tdata.AUTOR_NAME), (
-                    'Коммент отображается неверно'
-               )
-
-          with allure.step("Step №10 - Через UI оставить лайк к записи"):
-               like = wall_post.like_btn
-               like.add_like_post()
-
-          with allure.step("Step №11 - Через запрос к API убедиться, что у записи\
-                            появился лайк от правильного пользователя"):
-               assert api_inst.check_add_like_this_post(owner_id=user_id, post_id=post_id), (
-                      'Нужного пользователя нет в спискепролайкавших')
-
-          with allure.step("Step №12 - Через запрос к API удалить созданную запись"):
-               api_inst.delete_entry(owner_id=user_id, post_id=post_id)
-
-          with allure.step("Step №13 - Не обновляя страницу убедиться, что запись удалена"):
-               assert wall_post.check_post_is_deleted(), "Ошибка при удалени, новосозданный пост не был удалён"
+    @pytest.mark.parametrize('simulate_data', 
+    [(
+           {'status_id':{'name': 'PASSED'}, 'project_id':TableTestData.project_name, 'author_id':TableTestData.author_data})
+    ])
+    def test_case_5(self, simulate_data):
+           Logger('Симуляция выполнения 3 теста')
+           table = Table_test(tb_name='test')
+           assert table.simulate_and_update_test(simulate_data=simulate_data)

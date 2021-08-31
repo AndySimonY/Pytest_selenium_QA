@@ -1,8 +1,10 @@
 import os
 import cv2
-import random
 import string
+import random
+from datetime import datetime as dtime
 from tests.config.test_data.urls import Urls
+
 
 class MyUtils:
     
@@ -25,7 +27,37 @@ class MyUtils:
             return rand_str
 
     @staticmethod
-    def join_path(path, host = Urls.BASE_URL_API):
+    def generate_from_to_numbers(count, start, 
+                                end, duplicate=False, 
+                                unique=False):
+        numbers = []
+        k = 0
+        while k < count:
+            k+=1
+            num = random.randint(start, end )
+            if duplicate:
+                nums = str(num)+str(num)
+                if unique:
+                    if nums in numbers:
+                        if k >= 0:
+                            k-=1
+                    else:
+                        numbers.append(nums)
+                else:
+                    numbers.append(nums)
+            else:
+                if unique:
+                    if num in numbers:
+                        if k >= 0:
+                            k-=1
+                    else:
+                        numbers.append(num)
+                else:
+                    numbers.append(num)
+        return numbers
+
+    @staticmethod
+    def join_path(path, host):
             host_path = host + path
             return host_path
 
@@ -73,4 +105,11 @@ class MyUtils:
         result = MyUtils.compare_hash(hash1, hash2)
         return result
 
+    @staticmethod
+    def convert_to_datatime(start_time=''):
+        if not start_time:
+            start_time = dtime.now()
+        end_time = dtime.now()
+        return start_time.strftime('%Y-%m-%d %H:%M:%S'),\
+               end_time.strftime('%Y-%m-%d %H:%M:%S')
 

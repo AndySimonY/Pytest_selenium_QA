@@ -11,12 +11,11 @@ def pytest_addoption(parser):
     parser.addoption("--grid_port", action="store", default=Grid.GRID_PORT,
                      help="Port of remote connection")
 
-
 @pytest.fixture(scope="session")
 def create_browser(request):
     """
         Создание сессии браузера с именем из конфиг файла.
-
+    Args:
     """
     with allure.step("Создание сессии браузера из конфиг файла"):
         browser = request.config.getoption('--browser')

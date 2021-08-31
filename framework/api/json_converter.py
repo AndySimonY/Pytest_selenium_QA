@@ -52,7 +52,12 @@ class JsonConverter:
                                    .replace('True', '"True"')\
                                    .replace('False', '"False"')
                 return JsonConverter.parse_json_into_obj(str_obj)
-                      
+
+    @staticmethod
+    def get_keys(_dict):
+        return list(_dict.keys())
+
+
     @staticmethod
     def parse_json_into_obj(obj):
         return json.loads(obj, object_hook=lambda d: SimpleNamespace(**d))
