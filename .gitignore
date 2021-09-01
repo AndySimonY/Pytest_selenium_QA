@@ -5,8 +5,9 @@ __pycache__/
 
 # C extensions
 *.so
-
+/framework
 # Distribution / packaging
+.flake8
 .Python
 build/
 develop-eggs/
