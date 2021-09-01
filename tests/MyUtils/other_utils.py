@@ -5,7 +5,6 @@ import random
 from datetime import datetime as dtime
 from tests.config.test_data.urls import Urls
 
-
 class MyUtils:
     
     @staticmethod
@@ -54,7 +53,11 @@ class MyUtils:
                         numbers.append(num)
                 else:
                     numbers.append(num)
-        return numbers
+                    
+        if len(numbers) == 1:
+            return numbers[0]
+        else:
+            return numbers
 
     @staticmethod
     def join_path(path, host):
@@ -112,4 +115,3 @@ class MyUtils:
         end_time = dtime.now()
         return start_time.strftime('%Y-%m-%d %H:%M:%S'),\
                end_time.strftime('%Y-%m-%d %H:%M:%S')
-
