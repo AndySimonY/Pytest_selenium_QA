@@ -5,7 +5,7 @@ __pycache__/
 
 # C extensions
 *.so
-framework/
+
 # Distribution / packaging
 .Python
 build/
@@ -72,7 +72,7 @@ instance/
 docs/_build/
 
 # PyBuilder
-target/
+
 
 # Jupyter Notebook
 .ipynb_checkpoints
