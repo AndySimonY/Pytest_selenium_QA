@@ -1,1 +1,0 @@
-CONTAINS_TEXT = "[contains(.,\"{}\")]"
