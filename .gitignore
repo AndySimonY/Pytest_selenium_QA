@@ -9,8 +9,6 @@ __pycache__/
 # Distribution / packaging
 /framework/
 /flake8
-/requirements
-/tests
 .Python
 build/
 develop-eggs/
